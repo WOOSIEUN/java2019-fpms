@@ -1,4 +1,4 @@
 
-public class FamilyAccount {
+public class FamilyAccount extends PersonalAccount{
 
 }
