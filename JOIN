@@ -1,0 +1,207 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class Join extends JFrame implements ActionListener{
+
+	private JTextField tfid;
+	private JTextField tid;
+	private JTextField tpw;
+	private JTextField tn;
+	private JTextField tr;
+	
+	
+	public Join() {
+		
+		
+		JPanel p=new JPanel();
+
+		//무슨 항목인지 출력
+		JLabel lfid = new JLabel("고유번호");
+		JLabel lid = new JLabel("아이디");
+		JLabel lpw = new JLabel("비밀번호");
+		JLabel ln=new JLabel("이름");
+		JLabel lr=new JLabel("가족관계");
+		
+		//중복확인 버튼
+		JButton a1=new JButton("가족 고유번호 중복체크");
+		JButton a2=new JButton("아이디 중복체크");
+		
+		//각 항목별로 텍스트창 만들기
+		tfid=new JTextField();		
+		tid=new JTextField();
+		tpw=new JTextField();
+		tn=new JTextField();
+		tr=new JTextField();
+		
+		//화면에 표현
+		add(lfid);
+		add(tfid);
+		add(a1);
+		add(lid);
+		add(tid);
+		add(a2);
+		add(lpw);
+		add(tpw);
+		add(ln);
+		add(tn);
+		add(lr);
+		add(tr);
+		
+		//버튼 생성 및 화면에 표현
+		
+		JButton j1=new JButton("저장");
+		JButton j2=new JButton("취소");
+		add(j1);
+		add(j2);		
+		
+		
+		//항목별로 위치 지정
+		lfid.setBounds(40, 30,80, 40);
+		lid.setBounds(40, 70, 80, 40);
+		lpw.setBounds(40, 110, 80, 40);
+		ln.setBounds(40, 150, 80, 40);
+		lr.setBounds(40, 190, 80, 40);
+		
+        tfid.setBounds(120, 30, 150, 40);        
+		tid.setBounds(120, 70, 150, 40);		
+        tpw.setBounds(120, 110, 150, 40);		
+        tn.setBounds(120, 150, 150, 40);
+        tr.setBounds(120, 190, 150, 40);
+        
+		a1.setBounds(300, 30, 200, 40);
+		a2.setBounds(300, 70, 200, 40);
+		
+		j1.setBounds(160, 330, 80, 30);
+        j2.setBounds(290, 330, 80, 30);
+		
+        
+        //버튼 눌렀을때 실행되도록
+        a1.addActionListener(this);
+        a2.addActionListener(this);
+		j1.addActionListener(this);
+		j2.addActionListener(this);
+
+		
+		//전체 모습 화면에 표현
+		add(p);
+		setSize(550,500);
+		setTitle("회원가입 창");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		try {
+			String buttonString=e.getActionCommand();
+			int count1=0;
+			int number1;
+			//고유 번호 중복 체크하기
+			if (buttonString.equals("가족 고유번호 중복체크")) {
+				Scanner in=new Scanner(new FileInputStream("FID.txt"));
+
+				while(in.hasNextInt()) {
+					number1=in.nextInt();
+					if (number1==(stringToInt(tfid.getText()))) {
+						count1=0;
+						break;
+					}
+					else {
+						count1=1;
+					}
+				}
+				
+				in.close();
+				if (count1==0) {
+						JOptionPane.showMessageDialog(null, "고유번호가 확인되었습니다");	
+				}
+				else if (count1==1) {
+						JOptionPane.showMessageDialog(null, "없는 고유번호입니다.");	
+				}	
+			}
+			//아이디 중복 체크하기
+			else if (buttonString.equals("아이디 중복체크")) {
+
+				Scanner input = new Scanner(new FileReader("ID.txt"));
+				BufferedWriter output =
+						new BufferedWriter(new FileWriter("ID.txt", true));
+
+				int count2=0;
+				
+				while(input.hasNext()) {
+					String str=input.next();
+					if (str.equals(tid.getText())) {
+						count2=1;
+						break;
+					}
+					else {
+						count2=0;				
+					}
+				}
+				
+				input.close();
+				
+				if (count2==1) {
+					JOptionPane.showMessageDialog(null, "중복된 아이디입니다");	
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "사용 가능한 아이디입니다");
+					output.write(tid.getText()+" ");
+					output.write("\r\n");
+					output.close();
+				}
+			}
+			//저장 버튼 누르면 텍스트파일에 입력
+			else if (buttonString.equals("저장")) {
+				BufferedWriter outputStream=
+						new BufferedWriter(new FileWriter("JoinMembership.txt",true));
+				outputStream.write(tfid.getText()+" ");
+				outputStream.write(tid.getText() + " ");
+				outputStream.write(tpw.getText() + " ");
+				outputStream.write(tn.getText() + " ");
+				outputStream.write(tr.getText() + " ");
+				//한명당 엔터키
+				outputStream.write("\r\n");
+				outputStream.close();
+				JOptionPane.showMessageDialog(null, "회원가입을 성공하였습니다!");
+				}
+			//취소버튼 누르면 그냥 회원가입 취소
+			else if (buttonString.equals("취소")) {				
+				JOptionPane.showMessageDialog(null, "회원가입에 실패하였습니다.");
+			}
+			//예외처리
+			else
+				System.out.println("Unexpected error");
+		} catch (IOException e1) {
+			JOptionPane.showMessageDialog(null, "회원가입에 실패하였습니다.");
+
+		}
+		
+	
+	}
+	private static int stringToInt(String text) {
+		return Integer.parseInt(text.trim());
+	}
+
+	public static void main(String[] args) {
+		Join j=new Join();
+		j.setVisible(true);
+	}
+
+}
+
+
+
+참고자료 https://m.blog.naver.com/bogo1994/221279020828
