@@ -4,6 +4,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -13,11 +16,15 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 public class MainFrame extends JFrame implements ActionListener{
    private static final int WIDTH = 1000;
@@ -39,10 +46,10 @@ public class MainFrame extends JFrame implements ActionListener{
    JScrollPane familyScrollPane;
    //개인과 가족별 수입 지출 총합 텍스트필드
    JTextField personalIncome;
-   JTextField personalconsumption;
+   JTextField personalConsumption;
    JTextField personalTotal;
    JTextField familyIncome;
-   JTextField familyconsumption;
+   JTextField familyConsumption;
    JTextField familyTotal;
    //데이터 삽입에 필요한 텍스트필드
    JTextField dateField;
@@ -148,6 +155,20 @@ public class MainFrame extends JFrame implements ActionListener{
       familyScrollPane = new JScrollPane(familyAccountTable);
       tablePanel.add(familyScrollPane);
       add(tablePanel, BorderLayout.CENTER);
+      
+      //JTable에서 컬럼명을 클릭했을때, 데이터 값 정렬
+      personalAccountTable.setAutoCreateRowSorter(true);
+      TableRowSorter personalAccountTableSorter = new TableRowSorter(personalAccountTableModel);
+      personalAccountTable.setRowSorter(personalAccountTableSorter);
+      familyAccountTable.setAutoCreateRowSorter(true);
+      TableRowSorter familyAccountTableSorter = new TableRowSorter(familyAccountTableModel);
+      familyAccountTable.setRowSorter(familyAccountTableSorter);
+      
+      //Table의 셀 크기 조절
+      personalAccountTable.getColumnModel().getColumn(0).setPreferredWidth(118);
+      familyAccountTable.getColumnModel().getColumn(0).setPreferredWidth(118);
+      personalAccountTable.getColumnModel().getColumn(3).setPreferredWidth(100);
+      familyAccountTable.getColumnModel().getColumn(3).setPreferredWidth(100);
 
       //수입 지출 총합을 출력할 때 쓸 패널 생성.
       JPanel sumPanel = new JPanel();
@@ -160,18 +181,18 @@ public class MainFrame extends JFrame implements ActionListener{
       personalSumLabelPanel.setLayout(new BoxLayout(personalSumLabelPanel, BoxLayout.X_AXIS));
       JPanel familySumLabelPanel = new JPanel();
       familySumLabelPanel.setLayout(new BoxLayout(familySumLabelPanel, BoxLayout.X_AXIS));
-
+      
       //라벨 생성 및 sumPanel에 붙이기
-      JLabel personalIncomeLabel = new JLabel("  개인소비  ");
+      JLabel personalIncomeLabel = new JLabel("  개인수입  ");
       personalSumLabelPanel.add(personalIncomeLabel);
-      JLabel personalconsumptionLabel = new JLabel("  개인지출  ");
-      personalSumLabelPanel.add(personalconsumptionLabel);
+      JLabel personalConsumptionLabel = new JLabel("  개인지출  ");
+      personalSumLabelPanel.add(personalConsumptionLabel);
       JLabel personalTotalLabel = new JLabel("  개인총합  ");
       personalSumLabelPanel.add(personalTotalLabel);
-      JLabel familyIncomeLabel = new JLabel("  가족소비  ");
+      JLabel familyIncomeLabel = new JLabel("  가족수입  ");
       familySumLabelPanel.add(familyIncomeLabel);
-      JLabel familyconsumptionLabel = new JLabel("  가족지출  ");
-      familySumLabelPanel.add(familyconsumptionLabel);
+      JLabel familyConsumptionLabel = new JLabel("  가족지출  ");
+      familySumLabelPanel.add(familyConsumptionLabel);
       JLabel familyTotalLabel = new JLabel("  가족총합  ");
       familySumLabelPanel.add(familyTotalLabel);
       sumPanel.add(personalSumLabelPanel);
@@ -181,18 +202,18 @@ public class MainFrame extends JFrame implements ActionListener{
       personalIncome = new JTextField("");
       personalIncome.setEditable(false);
       personalSumPanel.add(personalIncome);
-      personalconsumption = new JTextField("");
-      personalconsumption.setEditable(false);
-      personalSumPanel.add(personalconsumption);
+      personalConsumption = new JTextField("");
+      personalConsumption.setEditable(false);
+      personalSumPanel.add(personalConsumption);
       personalTotal = new JTextField("");
       personalTotal.setEditable(false);
       personalSumPanel.add(personalTotal);
       familyIncome = new JTextField("");
       familyIncome.setEditable(false);
       familySumPanel.add(familyIncome);
-      familyconsumption = new JTextField("");
-      familyconsumption.setEditable(false);
-      familySumPanel.add(familyconsumption);
+      familyConsumption = new JTextField("");
+      familyConsumption.setEditable(false);
+      familySumPanel.add(familyConsumption);
       familyTotal = new JTextField("");
       familyTotal.setEditable(false);
       familySumPanel.add(familyTotal);
@@ -200,7 +221,7 @@ public class MainFrame extends JFrame implements ActionListener{
       sumPanel.add(familySumPanel);
       add(sumPanel, BorderLayout.NORTH);
 
-      //각 총합 계산하는 메소드 필요 -> 해당 메소드는 값 수정 삭제 입력마다 필요할 것으로 예상.
+      totalCalculation();
 
       //데이터 삽입 삭제 저장
       //패널 생성
@@ -222,7 +243,7 @@ public class MainFrame extends JFrame implements ActionListener{
       dataManagementPanel.add(minorClassificationField);
       JLabel amountLabel = new JLabel("금액");
       dataManagementPanel.add(amountLabel);
-      JTextField amountField = new JTextField("정수입력");
+      amountField = new JTextField("정수입력");
       dataManagementPanel.add(amountField);
       
       
@@ -255,7 +276,8 @@ public class MainFrame extends JFrame implements ActionListener{
                    personalAccountTableModel.addRow(inputString);
                 } else {
                    System.out.println("예상치 못한 에러가 발생했습니다. 관리자에게 문의해주세요.");
-                }          
+                }       
+                totalCalculation();
                 //필드 초기화
                 dateField.setText("");
                 majorClassificationField.setText("");
@@ -269,21 +291,21 @@ public class MainFrame extends JFrame implements ActionListener{
       dataManagementPanel.add(insert);
       JButton delete = new JButton("삭제");
       delete.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e) {
-            String event = e.getActionCommand();
-            if (event == "삭제") {
-                if(personalAccountTable.getSelectedRow() != -1) {
-                   personalAccountTableModel.removeRow(personalAccountTable.getSelectedRow());
-                } else if (familyAccountTable.getSelectedRow() != -1){
-                   familyAccountTableModel.removeRow(familyAccountTable.getSelectedRow());
-                } else {
-                   return;
-                }   
-             } else {
-                System.out.println("예상치 못한 에러가 발생했습니다. 관리자에게 문의해주세요.");
+            public void actionPerformed(ActionEvent e) {
+                String event = e.getActionCommand();
+                if (event == "삭제") {
+                    if(personalAccountTable.getSelectedRow() != -1) {
+                       personalAccountTableModel.removeRow(personalAccountTable.getSelectedRow());
+                    } else if (familyAccountTable.getSelectedRow() != -1){
+                       familyAccountTableModel.removeRow(familyAccountTable.getSelectedRow());
+                    } else {
+                       return;
+                    }   
+                 } else {
+                    System.out.println("예상치 못한 에러가 발생했습니다. 관리자에게 문의해주세요.");
+                 }
              }
-         }
-      });
+          });
       dataManagementPanel.add(delete);
       JButton modify = new JButton("수정");
       modify.addActionListener(new ActionListener() {
@@ -324,36 +346,111 @@ public class MainFrame extends JFrame implements ActionListener{
                 } else {
                    return;
                 }
-                if(personalAccountTable.getSelectedColumn() == 0 || familyAccountTable.getSelectedColumn() == 0) {
-//                   //날짜순 정렬 필요
-                }
+             } else {
+                System.out.println("예상치 못한 에러가 발생했습니다. 관리자에게 문의해주세요.");
+             }
+            totalCalculation();
+         }
+      });
+      dataManagementPanel.add(modify);
+      //dataMangementPanel 메인프레임 SOUTH에 추가
+      add(dataManagementPanel, BorderLayout.SOUTH);
+      
+      //메뉴바 추가
+      JMenu systemMenu = new JMenu("메뉴");
+      //파일로 저장
+      JMenuItem saveMenuItem = new JMenuItem("저장");    
+      systemMenu.add(saveMenuItem);     
+      saveMenuItem.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            String event = e.getActionCommand();
+            if (event.equals("저장")) {
+               //입출력에 필요한 변수 초기화
+               cnt = 0;
+               //파일 이름 재설정
+               familyFileName = (intToString(FID) + ".txt");
+               personalFileName = (intToString(FID) + " " + Name +".txt");
+               PrintWriter outputStream = null;
+               try { //개인 데이터 저장
+                  outputStream = new PrintWriter(new FileOutputStream(personalFileName));
+                  cnt = personalAccountTable.getRowCount();
+                  outputStream.println(cnt + "");
+                  for (int i = 0; i < cnt; i++) {
+                     outputStream.println(personalAccountTable.getValueAt(i,0) + " " + personalAccountTable.getValueAt(i,1) + " " + personalAccountTable.getValueAt(i,2) + " " + personalAccountTable.getValueAt(i,3));
+                  }
+                  outputStream.close();
+                  outputStream = new PrintWriter(new FileOutputStream(familyFileName));
+                  cnt = familyAccountTable.getRowCount();
+                  outputStream.println(cnt + "");
+                  for (int i = 0; i < cnt; i++) {
+                     outputStream.println(familyAccountTable.getValueAt(i,0) + " " + familyAccountTable.getValueAt(i,1) + " " + familyAccountTable.getValueAt(i,2) + " " + familyAccountTable.getValueAt(i,3));
+                  }
+                  outputStream.close();                  
+               } catch (FileNotFoundException er) {
+                  System.out.println("파일을 여는데 문제가 생겼습니다. 프로그램을 종료합니다.");
+                  System.exit(0);
+               } catch(IOException er) {
+                  System.out.println("파일을 여는데 문제가 생겼습니다. 프로그램을 종료합니다.");
+                  System.exit(0);
+               }               
              } else {
                 System.out.println("예상치 못한 에러가 발생했습니다. 관리자에게 문의해주세요.");
              }
          }
       });
-      dataManagementPanel.add(modify);
-            
-      //dataMangementPanel 메인프레임 SOUTH에 추가
-      add(dataManagementPanel, BorderLayout.SOUTH);
-      
-
+      //도움말
+      JMenuItem helpMenuItem = new JMenuItem("도움말");
+      systemMenu.add(helpMenuItem);
+      helpMenuItem.addActionListener(this);
+      JMenuBar menuBar = new JMenuBar();
+      menuBar.add(systemMenu);
+      setJMenuBar(menuBar);      
    }
 
    @Override
    public void actionPerformed(ActionEvent e) {
       String event = e.getActionCommand();
-       if (event == "삭제") {
-          if(personalAccountTable.getSelectedRow() != -1) {
-             personalAccountTableModel.removeRow(personalAccountTable.getSelectedRow());
-          } else if (familyAccountTable.getSelectedRow() != -1){
-             familyAccountTableModel.removeRow(familyAccountTable.getSelectedRow());
-          } else {
-             return;
-          }   
-       } else {
+       if (event == "도움말") {
+
+       } else{
          System.out.println("예상치 못한 에러가 발생했습니다. 관리자에게 문의해주세요.");
       }  
+   }
+   
+   public void totalCalculation() {
+      ROW = personalAccountTable.getRowCount();
+      int income = 0, consumption = 0, total = 0;
+      //개인 합계 구하기
+      for(int i = 0; i < ROW; i++) {
+         if(((String)personalAccountTable.getValueAt(i, 1)).equals("수입") == true){
+            income = income + stringToInt((String)personalAccountTable.getValueAt(i, 3));
+         } else if (((String)personalAccountTable.getValueAt(i, 1)).equals("지출") == true) {
+            consumption = consumption + stringToInt((String)personalAccountTable.getValueAt(i, 3));
+         } else {
+            System.out.println("수입 또는 지출 이외의 값이 개인테이블 안에 들어있습니다. 수정해주세요.");
+         }  
+      }
+      total = income - consumption;
+      personalIncome.setText(intToString(income));
+      personalConsumption.setText(intToString(consumption));
+      personalTotal.setText(intToString(total));
+      //변수 초기화
+      income = consumption = total = 0;
+      //가족 개인 합계 구하기
+      ROW = familyAccountTable.getRowCount();
+      for(int i = 0; i < ROW; i++) {
+         if(((String)familyAccountTable.getValueAt(i, 1)).equals("수입") == true) {
+            income = income + stringToInt((String)familyAccountTable.getValueAt(i, 3));
+         } else if (((String)familyAccountTable.getValueAt(i, 1)).equals("지출") == true) {
+            consumption = consumption + stringToInt((String)familyAccountTable.getValueAt(i, 3));
+         } else {
+            System.out.println("수입 또는 지출 이외의 값이 가족테이블 안에 들어있습니다. 수정해주세요.");
+         }  
+      }
+      total = income - consumption;
+      familyIncome.setText(intToString(income));
+      familyConsumption.setText(intToString(consumption));
+      familyTotal.setText(intToString(total));
    }
 
    public int stringToInt(String string) {
