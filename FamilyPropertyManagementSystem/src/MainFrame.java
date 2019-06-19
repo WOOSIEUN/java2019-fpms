@@ -307,6 +307,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				} else {
 					JOptionPane.showMessageDialog(null, "예상치 못한 에러 발생. 관리자에게 문의하세요.");
 				}
+				totalCalculation();
 			}
 		});
 		dataManagementPanel.add(delete);

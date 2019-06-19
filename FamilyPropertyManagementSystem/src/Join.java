@@ -160,7 +160,6 @@ public class Join extends JFrame implements ActionListener {
 					PrintWriter outputStream = new PrintWriter(new FileWriter("./Data/Login/JoinMembership.txt", true));
 					//데이터 저장
 					outputStream.println(tfid.getText() + " " + tid.getText() + " " + tpw.getText() + " " + tn.getText() + " " + tr.getText() + " ");
-					output.println("");
 					output.println("" + tid.getText());
 					outputStream.close();
 					output.close();

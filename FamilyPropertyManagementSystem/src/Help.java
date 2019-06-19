@@ -18,7 +18,7 @@ public class Help extends JFrame implements ActionListener {
 	
 	public Help() {
 		setTitle("도움말");
-		setSize(400, 600);
+		setSize(460, 600);
 		setResizable(false);
 		setLocation(960, 500);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -53,9 +53,9 @@ public class Help extends JFrame implements ActionListener {
 		advancedSetting.addActionListener(this);
 		selectGuide.add(advancedSetting);
 		
-		JButton error = new JButton("오류");
-		error.addActionListener(this);
-		selectGuide.add(error);
+		JButton errorguide = new JButton("오류");
+		errorguide.addActionListener(this);
+		selectGuide.add(errorguide);
 		
 		add(selectGuide, BorderLayout.SOUTH);
 		
