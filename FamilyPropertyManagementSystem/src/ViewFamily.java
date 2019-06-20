@@ -22,7 +22,7 @@ public class ViewFamily extends JFrame {
 		setLayout(new BorderLayout());
 
 		Scanner inputStream = null;
-		String tableHeader[] = {"아이디", "이름", "가족관계"};
+		String tableHeader[] = {"이름", "아이디", "가족관계"};
 		String viewFamilyContents[][] = null;
 		String tFID = null, tID = null, tPW = null, tName = null, tRelation = null;
 		
